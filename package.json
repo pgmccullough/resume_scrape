@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "csv-writer": "^1.6.0",
+    "i": "^0.3.7",
+    "npm": "^8.14.0",
+    "ocr-space-api-wrapper": "^2.1.1",
+    "pkg": "^5.8.0"
+  }
+}
