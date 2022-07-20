@@ -18,7 +18,7 @@ const phoneFormat = (phone) => {
     return phone;
 } 
 
-console.log(ocrKey+" Reading resumes, please wait. This may take several seconds.");
+console.log("Reading resumes, please wait. This may take several seconds.");
 
 files.map(file => {
     let extCheck = file.split(".").at(-1);
