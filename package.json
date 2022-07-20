@@ -5,5 +5,22 @@
     "npm": "^8.14.0",
     "ocr-space-api-wrapper": "^2.1.1",
     "pkg": "^5.8.0"
-  }
+  },
+  "scripts": {
+    "deploy": "npx pkg index.js"
+  },
+  "name": "resume-entry",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pgmccullough/resume_scrape.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pgmccullough/resume_scrape/issues"
+  },
+  "homepage": "https://github.com/pgmccullough/resume_scrape#readme",
+  "description": ""
 }

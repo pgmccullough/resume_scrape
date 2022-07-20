@@ -1,3 +1,8 @@
 node_modules/
 .DS_Store
 package-lock.json
+apikey.json
+
+index-linux
+index-win.exe
+index-macos
