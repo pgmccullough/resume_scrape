@@ -2,7 +2,7 @@
 
 Simple application for a friend who needed to be able to take multiple PDFs of resumes, and have a CSV generated with the name, email address, and phone number of each applicant. The resumes come from a single source and are all almost identically formatted, making this possible.
 
-# Set-up
+## Set-up
 ```
 git clone git@github.com:pgmccullough/resume_scrape.git
 ```
@@ -23,7 +23,7 @@ Three executable files will be created in the repo directory for each major OS:
 - index-win.exe
 - index-macos
 
-# Usage
+## Usage
 Move executable of current OS into a directory on the desktop called **resumes**, which also contains all resumes to be scraped.
 
 Run the executable. After running, a .csv file will be generated in the **resumes** directory containing a row for each resume's name, email, and phone.
