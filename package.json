@@ -7,9 +7,10 @@
     "pkg": "^5.8.0"
   },
   "scripts": {
-    "deploy": "npx pkg index.js"
+    "deploy": "npx pkg index.js",
+    "deploy_win": "npx pkg --no-bytecode --public --public-packages '*' index.js"
   },
-  "name": "resume-entry",
+  "name": "@pgmccullough/resume-entry",
   "version": "1.0.0",
   "main": "index.js",
   "repository": {
@@ -22,5 +23,6 @@
     "url": "https://github.com/pgmccullough/resume_scrape/issues"
   },
   "homepage": "https://github.com/pgmccullough/resume_scrape#readme",
-  "description": ""
+  "description": "Simple application for a friend who needed to be able to take multiple PDFs of resumes, and have a CSV generated with the name, email address, and phone number of each applicant. The resumes come from a single source and are all almost identically formatted, making this possible.",
+  "devDependencies": {}
 }
