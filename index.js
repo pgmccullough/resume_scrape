@@ -93,7 +93,11 @@ const writeCSV = () => {
                 clearInterval(myConsole);
                 console.clear();
                 titleMsg();
-                if(killSwitch.kill) timeOutKeeper();
+                if(killSwitch.kill) {
+                    timeOutKeeper();
+                } else {
+                    fs.writeFileSync("timeout.json",JSON.stringify({timeout:0,pickup:0}));
+                }
                 console.log(fileName+' generated. [**********]');
                 process.exit();
             });
@@ -148,6 +152,7 @@ let startI = 0;
 if(fs.existsSync("timeout.json")) {
     startI = JSON.parse(fs.readFileSync("timeout.json")).pickup;
 }
+if(startI>resumes.length) startI = 0;
 processResume(startI||0);
 
 
