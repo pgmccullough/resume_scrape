@@ -11,22 +11,23 @@ const safeExt = ['pdf','jpg','png','jpeg','bmp','gif','tif','tiff','webp'];
 let output = [];
 let myConsole;
 let killSwitch = [];
+let storeI = 0;
 
 const titleMsg = () => {
-    console.log(path+" Resume Scraper v1.0");
+    console.log("Resume Scraper v1.0");
 }
 
 const timeOutKeeper = () => {
     let timeout;
     if(fs.existsSync("timeout.json")) {
-        timeout = fs.readFileSync("timeout.json");
-        if(!((Number(timeout)-Math.floor(Date.now()/1000)) > 0)) {
+        timeout = JSON.parse(fs.readFileSync("timeout.json")).timeout;
+        if(!((Number(timeout)-Math.floor(Date.now()/1000)) >= 0)) {
             timeout = Math.floor(Date.now()/1000)+3600;
-            fs.writeFileSync("timeout.json",timeout)                        
+            fs.writeFileSync("timeout.json",JSON.stringify({timeout,pickup:killSwitch.kill}));
         }
     } else {
         const whiteList = Math.floor(Date.now()/1000)+3600;
-        fs.writeFileSync("timeout.json",whiteList.toString());
+        fs.writeFileSync("timeout.json",JSON.stringify({timeout:whiteList,pickup:killSwitch.kill}));
     }
     if(killSwitch.kill>1) console.log("Critical error at resume "+killSwitch.kill+" of "+resumes.length+". Generated CSV will contain details of prior resumes. This error is likely related to overuse of the API, blocking future requests for the next hour.");
     console.log("Please try again in "+(Number(timeout)-Math.floor(Date.now()/1000))+" seconds");
@@ -76,30 +77,39 @@ const writeCSV = () => {
         titleMsg();
         timeOutKeeper();
     } else {
-        let fileName = path+'/resume_autogen_'+Date.now()+'.csv';
-        const csvWriter = createCsvWriter({
-            path: fileName,
-            header: [
-            {id: 'name', title: 'Name'},
-            {id: 'phone', title: 'Phone'},
-            {id: 'email', title: 'Email'}
-            ]
-        });
-        csvWriter
-        .writeRecords(output)
-        .then(() => {
+        if(output.length) {
+            let fileName = path+'/resume_autogen_'+Date.now()+'.csv';
+            const csvWriter = createCsvWriter({
+                path: fileName,
+                header: [
+                {id: 'name', title: 'Name'},
+                {id: 'phone', title: 'Phone'},
+                {id: 'email', title: 'Email'}
+                ]
+            });
+            csvWriter
+            .writeRecords(output)
+            .then(() => {
+                clearInterval(myConsole);
+                console.clear();
+                titleMsg();
+                if(killSwitch.kill) timeOutKeeper();
+                console.log(fileName+' generated. [**********]');
+                process.exit();
+            });
+        } else {
             clearInterval(myConsole);
             console.clear();
             titleMsg();
-            if(killSwitch.kill) timeOutKeeper();
-            console.log(fileName+' generated. [**********]');
-        });
+            timeOutKeeper();
+            process.exit();
+        }
     }
 }
 
 const processResume = (i) => {
+    storeI = i;
     sysPrint("Reading "+resumes[i]+". "+(i+1)+"/"+resumes.length,(i+1)/(resumes.length)*100);
-    console.log(path+"/"+resumes[i]);
     ocrSpace(path+"/"+resumes[i], { apiKey: ocrKey })
     .then(response => {
         let lines = response.ParsedResults[0].ParsedText.split(/\r?\n|\r|\n/g);
@@ -134,4 +144,31 @@ const processResume = (i) => {
 
 const resumes = files.filter(file => safeExt.includes(file.split(".").at(-1)));
 sysPrint("Processing "+resumes.length+" resumes.",0);
-processResume(0);
+let startI = 0;
+if(fs.existsSync("timeout.json")) {
+    startI = JSON.parse(fs.readFileSync("timeout.json")).pickup;
+}
+processResume(startI||0);
+
+
+
+
+process.stdin.resume();//so the program will not close instantly
+
+function exitHandler(options, exitCode) {
+    killSwitch = {kill: storeI}
+    writeCSV();
+}
+
+//do something when app is closing
+process.on('exit', exitHandler.bind(null,{cleanup:true}));
+
+//catches ctrl+c event
+process.on('SIGINT', exitHandler.bind(null, {exit:true}));
+
+// catches "kill pid" (for example: nodemon restart)
+process.on('SIGUSR1', exitHandler.bind(null, {exit:true}));
+process.on('SIGUSR2', exitHandler.bind(null, {exit:true}));
+
+//catches uncaught exceptions
+process.on('uncaughtException', exitHandler.bind(null, {exit:true}));
