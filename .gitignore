@@ -6,3 +6,6 @@ apikey.json
 index-linux
 index-win.exe
 index-macos
+
+*.csv
+*.pdf
