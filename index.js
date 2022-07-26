@@ -2,9 +2,8 @@ const fs = require('fs');
 const {OCR_API: ocrKey} = require('./apikey.json');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const { ocrSpace } = require('ocr-space-api-wrapper');
-const { kill } = require('process');
 //const path = (process.pkg) ? process.cwd()+'/desktop/resumes' : __dirname+'/desktop/resumes';
-const path = (process.pkg) ? process.cwd() : __dirname;
+const path = (process.pkg) ? process.cwd()+"/desktop/resumes" : __dirname;
 
 let files = fs.readdirSync(path);
 
@@ -14,7 +13,23 @@ let myConsole;
 let killSwitch = [];
 
 const titleMsg = () => {
-    console.log("Resume Scraper v1.0");
+    console.log(path+" Resume Scraper v1.0");
+}
+
+const timeOutKeeper = () => {
+    let timeout;
+    if(fs.existsSync("timeout.js")) {
+        timeout = fs.readFileSync("timeout.js");
+        if(!((Number(timeout)-Math.floor(Date.now()/1000)) > 0)) {
+            timeout = Math.floor(Date.now()/1000)+3600;
+            fs.writeFileSync("timeout.js",timeout)                        
+        }
+    } else {
+        const whiteList = Math.floor(Date.now()/1000)+3600;
+        fs.writeFileSync("timeout.js",whiteList.toString());
+    }
+    console.log("Critical error at resume "+killSwitch.kill+" of "+resumes.length+". Generated CSV will contain details of prior resumes. This error is likely related to overuse of the API, blocking future requests for the next hour.");
+    console.log("Please try again in "+(Number(timeout)-Math.floor(Date.now()/1000))+" seconds");
 }
 
 const sysPrint = (msg, perc) => {
@@ -56,9 +71,6 @@ const phoneFormat = (phone) => {
 
 const writeCSV = () => {
     let fileName = path+'/resume_autogen_'+Date.now()+'.csv';
-    clearInterval(myConsole);
-    console.clear();
-    console.log("Generating "+fileName+". [**********]");
     const csvWriter = createCsvWriter({
         path: fileName,
         header: [
@@ -73,14 +85,16 @@ const writeCSV = () => {
             clearInterval(myConsole);
             console.clear();
             titleMsg();
-            if(killSwitch.kill) console.log("Critical error at resume "+killSwitch.kill+" of "+resumes.length+". Generated CSV will contain details of prior resumes. This error is likely related to overuse of the API, blocking future requests for the next hour.");
+            if(killSwitch.kill) {
+                timeOutKeeper();
+            }
             console.log(fileName+' generated. [**********]');
         });
 }
 
 const processResume = (i) => {
     sysPrint("Reading "+resumes[i]+". "+(i+1)+"/"+resumes.length,(i+1)/(resumes.length)*100);
-
+    console.log(path+"/"+resumes[i]);
     ocrSpace(path+"/"+resumes[i], { apiKey: ocrKey })
     .then(response => {
         let lines = response.ParsedResults[0].ParsedText.split(/\r?\n|\r|\n/g);
@@ -112,10 +126,6 @@ const processResume = (i) => {
         }
     })
 }
-
-
-
-
 
 const resumes = files.filter(file => safeExt.includes(file.split(".").at(-1)));
 sysPrint("Processing "+resumes.length+" resumes.",0);
