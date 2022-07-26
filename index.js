@@ -18,17 +18,17 @@ const titleMsg = () => {
 
 const timeOutKeeper = () => {
     let timeout;
-    if(fs.existsSync("timeout.js")) {
-        timeout = fs.readFileSync("timeout.js");
+    if(fs.existsSync("timeout.json")) {
+        timeout = fs.readFileSync("timeout.json");
         if(!((Number(timeout)-Math.floor(Date.now()/1000)) > 0)) {
             timeout = Math.floor(Date.now()/1000)+3600;
-            fs.writeFileSync("timeout.js",timeout)                        
+            fs.writeFileSync("timeout.json",timeout)                        
         }
     } else {
         const whiteList = Math.floor(Date.now()/1000)+3600;
-        fs.writeFileSync("timeout.js",whiteList.toString());
+        fs.writeFileSync("timeout.json",whiteList.toString());
     }
-    console.log("Critical error at resume "+killSwitch.kill+" of "+resumes.length+". Generated CSV will contain details of prior resumes. This error is likely related to overuse of the API, blocking future requests for the next hour.");
+    if(killSwitch.kill>1) console.log("Critical error at resume "+killSwitch.kill+" of "+resumes.length+". Generated CSV will contain details of prior resumes. This error is likely related to overuse of the API, blocking future requests for the next hour.");
     console.log("Please try again in "+(Number(timeout)-Math.floor(Date.now()/1000))+" seconds");
 }
 
@@ -70,26 +70,31 @@ const phoneFormat = (phone) => {
 } 
 
 const writeCSV = () => {
-    let fileName = path+'/resume_autogen_'+Date.now()+'.csv';
-    const csvWriter = createCsvWriter({
-        path: fileName,
-        header: [
-          {id: 'name', title: 'Name'},
-          {id: 'phone', title: 'Phone'},
-          {id: 'email', title: 'Email'}
-        ]
-      });
+    if(killSwitch.kill&&killSwitch.kill<=1) {
+        clearInterval(myConsole);
+        console.clear();
+        titleMsg();
+        timeOutKeeper();
+    } else {
+        let fileName = path+'/resume_autogen_'+Date.now()+'.csv';
+        const csvWriter = createCsvWriter({
+            path: fileName,
+            header: [
+            {id: 'name', title: 'Name'},
+            {id: 'phone', title: 'Phone'},
+            {id: 'email', title: 'Email'}
+            ]
+        });
         csvWriter
         .writeRecords(output)
         .then(() => {
             clearInterval(myConsole);
             console.clear();
             titleMsg();
-            if(killSwitch.kill) {
-                timeOutKeeper();
-            }
+            if(killSwitch.kill) timeOutKeeper();
             console.log(fileName+' generated. [**********]');
         });
+    }
 }
 
 const processResume = (i) => {

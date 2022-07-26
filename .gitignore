@@ -2,6 +2,7 @@ node_modules/
 .DS_Store
 package-lock.json
 apikey.json
+timeout.json
 
 index-linux
 index-win.exe
