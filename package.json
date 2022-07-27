@@ -7,7 +7,7 @@
     "pkg": "^5.8.0"
   },
   "scripts": {
-    "deploy": "npx pkg index.js && mv index-macos resumeExe && mv resumeExe ~/desktop/resumes",
+    "deploy": "npx pkg index.js -t macos && mv index resumeExe && mv resumeExe ~/desktop/resumes",
     "deploy_win": "npx pkg --no-bytecode --public --public-packages '*' index.js"
   },
   "name": "@pgmccullough/resume-entry",
